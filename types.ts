@@ -25,6 +25,9 @@ export interface TradeData {
     macd: string;
     adx: string;
     ema: string; // e.g. "50 EMA: 2400"
+    bb?: string; // Bollinger Bands
+    atr?: string; // Average True Range
+    fibonacci?: string; // Key levels
   };
   patterns: {
     candlestick: string[]; // e.g. ["Hammer", "Doji"]

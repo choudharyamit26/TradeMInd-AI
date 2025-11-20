@@ -22,10 +22,11 @@ Your STRICT objective is to provide "Real-Time" actionable signals based on the 
     *   **Sentiment:** Positive/Negative/Neutral.
 
 3.  **VERIFIABLE TECHNICAL DATA (REQUIRED):**
-    *   **Indicators:** precise values for RSI (14), MACD, ADX, and key EMAs (20/50/200).
-    *   **Candlestick Patterns:** Identify specific candles (e.g., Hammer, Engulfing, Doji) on the relevant chart.
-    *   **Chart Patterns:** Identify structures (e.g., Head & Shoulders, Triangles, Flags).
-    *   **OHLC Data:** Retrieve or approximate the Open, High, Low, Close for the **last 3 periods** (Days for Swing, 15-min for Intraday) to populate a data table.
+    *   **Trend & Momentum:** RSI (14), MACD, ADX, and key EMAs (20/50/200).
+    *   **Volatility:** **Bollinger Bands** (Status: Squeeze/Expansion/Upper Band/Lower Band) and **ATR** (Average True Range value).
+    *   **Support/Resistance:** **Fibonacci Retracement** levels (e.g., 0.382, 0.618 support).
+    *   **Patterns:** Candlestick (Hammer, Engulfing) & Chart Patterns (Head & Shoulders, Flags).
+    *   **OHLC Data:** Last 3 periods (Days for Swing, 15-min for Intraday).
 
 4.  **SIGNAL GENERATION:**
     *   Decide: **BUY**, **SELL**, or **NEUTRAL/WAIT**.
@@ -48,14 +49,17 @@ Your STRICT objective is to provide "Real-Time" actionable signals based on the 
   "entry": "2440-2450",
   "stopLoss": "2380",
   "targets": ["2550", "2650"],
-  "reasoning": "Breakout above 50 EMA confirmed by RSI divergence.",
+  "reasoning": "Breakout confirmed by RSI divergence and Fibonacci support.",
   "newsSummary": "Reliance Retail secured massive funding.",
   "newsSentiment": "Positive",
   "technicals": {
     "rsi": "62.5 (Bullish)",
     "macd": "Crossover above zero",
     "adx": "28 (Strong Trend)",
-    "ema": "Price > 20/50 EMA"
+    "ema": "Price > 50 EMA",
+    "bb": "Band Expansion (Volatile)",
+    "atr": "45.2 (High)",
+    "fibonacci": "Retraced to 0.618 level"
   },
   "patterns": {
     "candlestick": ["Bullish Engulfing", "Hammer"],
@@ -80,7 +84,7 @@ export const sendMessageToGemini = async (
       model: MODEL_NAME,
       config: {
         systemInstruction: getSystemInstruction(tradingMode),
-        temperature: 0.3, // Lower temperature for precise data extraction
+        temperature: 0.3, 
         tools: [{ googleSearch: {} }],
         thinkingConfig: { thinkingBudget: 4096 }, 
       },
@@ -88,7 +92,11 @@ export const sendMessageToGemini = async (
     });
 
     const result: GenerateContentResponse = await chat.sendMessage({
-      message: `Analyze ${message} for a ${tradingMode} trade. 1. Find real-time price. 2. Get specific values for RSI, MACD, and EMAs. 3. List detected Candle/Chart patterns. 4. Provide last 3 candles OHLC data.`,
+      message: `Analyze ${message} for a ${tradingMode} trade. 
+      1. Find real-time price. 
+      2. Get values for RSI, MACD, EMA, Bollinger Bands, ATR, and Fibonacci. 
+      3. List detected Patterns. 
+      4. Provide last 3 candles OHLC.`,
     });
 
     const fullText = result.text || "I couldn't generate a response. Please try again.";

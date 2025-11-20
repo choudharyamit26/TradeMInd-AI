@@ -141,6 +141,23 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onToggleW
                           <div className="bg-black/20 px-2 py-1 rounded text-[10px] flex justify-between truncate">
                             <span className="opacity-60">EMA</span> <span className="font-mono text-white truncate ml-2">{message.tradeData.technicals.ema}</span>
                           </div>
+                          
+                          {/* New Indicators */}
+                          {message.tradeData.technicals.bb && (
+                             <div className="bg-black/20 px-2 py-1 rounded text-[10px] flex justify-between col-span-2">
+                               <span className="opacity-60">B. Bands</span> <span className="font-mono text-white">{message.tradeData.technicals.bb}</span>
+                             </div>
+                          )}
+                          {message.tradeData.technicals.atr && (
+                             <div className="bg-black/20 px-2 py-1 rounded text-[10px] flex justify-between">
+                               <span className="opacity-60">ATR</span> <span className="font-mono text-white">{message.tradeData.technicals.atr}</span>
+                             </div>
+                          )}
+                           {message.tradeData.technicals.fibonacci && (
+                             <div className="bg-black/20 px-2 py-1 rounded text-[10px] flex justify-between">
+                               <span className="opacity-60">Fib</span> <span className="font-mono text-white">{message.tradeData.technicals.fibonacci}</span>
+                             </div>
+                          )}
                        </div>
                      )}
 
@@ -162,7 +179,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onToggleW
                   </div>
                 )}
 
-                {/* 3. OHLC Data (New) */}
+                {/* 3. OHLC Data */}
                 {message.tradeData.recentOHLC && message.tradeData.recentOHLC.length > 0 && (
                   <div className="bg-black/10 rounded-lg border border-white/5 p-2 overflow-hidden">
                      <div className="text-[10px] font-bold opacity-80 mb-1.5">RECENT PRICE ACTION</div>

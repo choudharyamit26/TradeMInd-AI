@@ -1,9 +1,10 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Message, Role, TradingStyle } from '../types';
 import { sendMessageToGemini } from '../services/geminiService';
 import { MessageBubble } from './MessageBubble';
 import { WatchlistPanel } from './WatchlistPanel';
-import { Send, RefreshCcw, BarChart2, Clock, Calendar, Menu, X } from 'lucide-react';
+import { Send, RefreshCcw, BarChart2, Clock, Calendar, Menu, X, RefreshCw } from 'lucide-react';
 
 export const ChatInterface: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
@@ -54,6 +55,56 @@ export const ChatInterface: React.FC = () => {
       handleRemoveFromWatchlist(symbol);
     } else {
       handleAddToWatchlist(symbol);
+    }
+  };
+
+  const getLastAnalyzedSymbol = () => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].tradeData?.symbol) {
+        return messages[i].tradeData.symbol;
+      }
+    }
+    return null;
+  };
+
+  const handleRefresh = async () => {
+    const symbol = getLastAnalyzedSymbol();
+    if (!symbol || isLoading) return;
+
+    setIsLoading(true);
+    
+    try {
+      const history = messages.map(msg => ({
+        role: msg.role === Role.USER ? 'user' : 'model',
+        parts: [{ text: msg.content }]
+      }));
+
+      const response = await sendMessageToGemini(
+        history, 
+        `Update analysis for ${symbol} in ${tradingMode} mode. Fetch latest real-time price and technicals.`, 
+        tradingMode
+      );
+
+      const botMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: Role.MODEL,
+        content: response.text,
+        timestamp: Date.now(),
+        sources: response.sources,
+        tradeData: response.tradeData
+      };
+
+      setMessages(prev => [...prev, botMessage]);
+    } catch (error) {
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: Role.MODEL,
+        content: "I encountered an error while refreshing the data. Please try again.",
+        timestamp: Date.now(),
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -118,6 +169,8 @@ export const ChatInterface: React.FC = () => {
     "Bajaj Finance setup"
   ];
 
+  const activeSymbol = getLastAnalyzedSymbol();
+
   return (
     <div className="flex h-full max-h-screen overflow-hidden relative">
       
@@ -127,7 +180,7 @@ export const ChatInterface: React.FC = () => {
         {/* Mode Toggle Bar */}
         <div className="flex-none flex items-center justify-between px-4 py-2 bg-slate-900/50 border-b border-slate-800 backdrop-blur-sm">
            <div className="flex-1"></div>
-           <div className="bg-slate-800 p-1 rounded-lg flex gap-1">
+           <div className="bg-slate-800 p-1 rounded-lg flex items-center gap-1">
             <button 
               onClick={() => setTradingMode('INTRADAY')}
               className={`flex items-center gap-2 px-4 py-1.5 rounded-md text-xs font-semibold transition-all duration-200 ${
@@ -149,6 +202,23 @@ export const ChatInterface: React.FC = () => {
             >
               <Calendar size={14} />
               Swing
+            </button>
+            
+            {/* Vertical Divider */}
+            <div className="w-px h-5 bg-slate-700 mx-1"></div>
+
+            {/* Refresh Button */}
+            <button
+              onClick={handleRefresh}
+              disabled={!activeSymbol || isLoading}
+              className={`flex items-center justify-center px-3 py-1.5 rounded-md transition-all duration-200 group relative ${
+                 !activeSymbol || isLoading
+                 ? 'text-slate-600 cursor-not-allowed'
+                 : 'text-slate-400 hover:text-emerald-400 hover:bg-slate-700/50'
+              }`}
+              title={`Refresh analysis for ${activeSymbol || 'current stock'}`}
+            >
+              <RefreshCw size={14} className={isLoading ? "animate-spin" : ""} />
             </button>
           </div>
           <div className="flex-1 flex justify-end md:hidden">
