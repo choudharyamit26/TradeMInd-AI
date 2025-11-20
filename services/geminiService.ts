@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { TradeData, TradingStyle } from "../types";
 
@@ -17,22 +18,19 @@ Your STRICT objective is to provide "Real-Time" actionable signals based on the 
     *   Verify the data is from **today** (or the last trading session).
 
 2.  **NEWS & SENTIMENT ANALYSIS (Last 14 Days):**
-    *   **Search Query:** Perform a specific search for "[Stock Symbol] news India last 2 weeks".
-    *   **Events:** Look for Earnings reports, Board meetings, Order wins, Government policy changes, or Global cues affecting the sector.
-    *   **Sentiment:** Determine if the recent news flow is **Positive**, **Negative**, or **Neutral**.
-    *   **Impact:** Adjust your Buy/Sell decision based on this news. *Do not ignore bad news even if technicals are good.*
+    *   **Search Query:** "[Stock Symbol] news India last 2 weeks".
+    *   **Sentiment:** Positive/Negative/Neutral.
 
-3.  **ADVANCED TECHNICAL ANALYSIS (REQUIRED):**
-    *   **Trend:** EMA (9, 21, 50, 200), ADX (>25?).
-    *   **Momentum:** RSI, MACD Divergences.
-    *   **Volatility:** Bollinger Bands, ATR.
-    *   **Structure:** Pivot Points, Fibonacci, Patterns (Head & Shoulders, Flags).
-    *   **Timeframe:** ${mode === 'INTRADAY' ? '5-min / 15-min' : 'Daily / Weekly'}.
+3.  **VERIFIABLE TECHNICAL DATA (REQUIRED):**
+    *   **Indicators:** precise values for RSI (14), MACD, ADX, and key EMAs (20/50/200).
+    *   **Candlestick Patterns:** Identify specific candles (e.g., Hammer, Engulfing, Doji) on the relevant chart.
+    *   **Chart Patterns:** Identify structures (e.g., Head & Shoulders, Triangles, Flags).
+    *   **OHLC Data:** Retrieve or approximate the Open, High, Low, Close for the **last 3 periods** (Days for Swing, 15-min for Intraday) to populate a data table.
 
 4.  **SIGNAL GENERATION:**
     *   Decide: **BUY**, **SELL**, or **NEUTRAL/WAIT**.
     *   **Entry:** Precise range.
-    *   **Stop Loss:** Technical level (Swing low / EMA).
+    *   **Stop Loss:** Technical level.
     *   **Targets:** Min 1:2 Risk-Reward.
 
 ### RESPONSE FORMAT:
@@ -50,9 +48,24 @@ Your STRICT objective is to provide "Real-Time" actionable signals based on the 
   "entry": "2440-2450",
   "stopLoss": "2380",
   "targets": ["2550", "2650"],
-  "reasoning": "Technicals: Breakout above 50 EMA. Fundamentals: Positive news regarding retail arm expansion.",
-  "newsSummary": "Reliance Retail secured massive funding; Oil refining margins improved in last 2 weeks.",
-  "newsSentiment": "Positive"
+  "reasoning": "Breakout above 50 EMA confirmed by RSI divergence.",
+  "newsSummary": "Reliance Retail secured massive funding.",
+  "newsSentiment": "Positive",
+  "technicals": {
+    "rsi": "62.5 (Bullish)",
+    "macd": "Crossover above zero",
+    "adx": "28 (Strong Trend)",
+    "ema": "Price > 20/50 EMA"
+  },
+  "patterns": {
+    "candlestick": ["Bullish Engulfing", "Hammer"],
+    "chart": ["Ascending Triangle Breakout"]
+  },
+  "recentOHLC": [
+    {"time": "25 Oct", "open": "2400", "high": "2420", "low": "2390", "close": "2415", "status": "Green"},
+    {"time": "26 Oct", "open": "2415", "high": "2440", "low": "2410", "close": "2435", "status": "Green"},
+    {"time": "27 Oct", "open": "2435", "high": "2460", "low": "2430", "close": "2450", "status": "Green"}
+  ]
 }
 \`\`\`
 `;
@@ -67,7 +80,7 @@ export const sendMessageToGemini = async (
       model: MODEL_NAME,
       config: {
         systemInstruction: getSystemInstruction(tradingMode),
-        temperature: 0.4, // Slightly lower to keep news analysis grounded in fact
+        temperature: 0.3, // Lower temperature for precise data extraction
         tools: [{ googleSearch: {} }],
         thinkingConfig: { thinkingBudget: 4096 }, 
       },
@@ -75,7 +88,7 @@ export const sendMessageToGemini = async (
     });
 
     const result: GenerateContentResponse = await chat.sendMessage({
-      message: `Analyze ${message} for a ${tradingMode} trade. 1. Find real-time price. 2. Search for MAJOR news in last 14 days and factor it into the decision.`,
+      message: `Analyze ${message} for a ${tradingMode} trade. 1. Find real-time price. 2. Get specific values for RSI, MACD, and EMAs. 3. List detected Candle/Chart patterns. 4. Provide last 3 candles OHLC data.`,
     });
 
     const fullText = result.text || "I couldn't generate a response. Please try again.";

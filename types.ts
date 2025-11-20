@@ -1,3 +1,4 @@
+
 export enum Role {
   USER = 'user',
   MODEL = 'model'
@@ -15,8 +16,28 @@ export interface TradeData {
   stopLoss: string;
   targets: string[];
   reasoning: string;
-  newsSummary?: string; // New field for news analysis
-  newsSentiment?: 'Positive' | 'Negative' | 'Neutral'; // New field for sentiment
+  newsSummary?: string; 
+  newsSentiment?: 'Positive' | 'Negative' | 'Neutral';
+  
+  // New Verifiable Data Fields
+  technicals: {
+    rsi: string;
+    macd: string;
+    adx: string;
+    ema: string; // e.g. "50 EMA: 2400"
+  };
+  patterns: {
+    candlestick: string[]; // e.g. ["Hammer", "Doji"]
+    chart: string[]; // e.g. ["Double Bottom", "Flag"]
+  };
+  recentOHLC: Array<{
+    time: string; // "10:00" or "27 Oct"
+    open: string;
+    high: string;
+    low: string;
+    close: string;
+    status: 'Green' | 'Red';
+  }>;
 }
 
 export interface Message {

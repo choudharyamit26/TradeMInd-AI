@@ -1,7 +1,8 @@
+
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Role, Message } from '../types';
-import { User, Bot, ExternalLink, TrendingUp, TrendingDown, MinusCircle, Target, ShieldAlert, CircleDollarSign, Clock, Calendar, Star, Newspaper } from 'lucide-react';
+import { User, Bot, ExternalLink, TrendingUp, TrendingDown, MinusCircle, Target, ShieldAlert, CircleDollarSign, Clock, Calendar, Star, Newspaper, Activity, BarChart2, ScanLine } from 'lucide-react';
 
 interface MessageBubbleProps {
   message: Message;
@@ -49,91 +50,180 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onToggleW
           
           {/* TRADE SIGNAL CARD (Only for Bot if data exists) */}
           {!isUser && message.tradeData && (
-            <div className={`w-full max-w-md mb-3 rounded-xl border p-4 shadow-lg backdrop-blur-sm ${getSignalStyle(message.tradeData.signal)}`}>
-              <div className="flex justify-between items-start mb-4 border-b border-white/10 pb-3">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-lg font-bold text-white">{message.tradeData.symbol}</h2>
-                    <span className="text-xs px-2 py-0.5 rounded bg-white/10 border border-white/10">
-                      {message.tradeData.currentPrice}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className={`text-sm font-bold tracking-wider flex items-center gap-1`}>
-                      {message.tradeData.signal}
-                    </span>
-                    <span className="text-[10px] opacity-70 px-1.5 py-0.5 bg-black/20 rounded border border-white/5 flex items-center gap-1">
-                      {message.tradeData.strategy === 'INTRADAY' ? <Clock size={8} /> : <Calendar size={8} />}
-                      {message.tradeData.strategy}
-                    </span>
-                    <span className="text-[10px] opacity-70 px-1.5 py-0.5 bg-black/20 rounded">
-                      Conf: {message.tradeData.confidence}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  {onToggleWatchlist && (
-                     <button 
-                       onClick={() => onToggleWatchlist(message.tradeData!.symbol)}
-                       className={`p-2 rounded-lg transition-colors ${isInWatchlist ? 'bg-yellow-400/20 text-yellow-400' : 'bg-black/20 text-slate-400 hover:text-white'}`}
-                     >
-                       <Star size={16} fill={isInWatchlist ? "currentColor" : "none"} />
-                     </button>
-                  )}
-                  <div className={`p-2 rounded-lg bg-black/20`}>
-                    {getSignalIcon(message.tradeData.signal)}
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2 text-sm mb-3">
-                <div className="bg-black/20 p-2 rounded-lg border border-white/5">
-                  <div className="flex items-center gap-1 text-[10px] opacity-70 mb-1">
-                    <CircleDollarSign size={10} /> ENTRY
-                  </div>
-                  <div className="font-semibold text-white text-xs">{message.tradeData.entry}</div>
-                </div>
-                <div className="bg-black/20 p-2 rounded-lg border border-white/5">
-                  <div className="flex items-center gap-1 text-[10px] opacity-70 mb-1">
-                    <Target size={10} /> TARGETS
-                  </div>
-                  <div className="font-semibold text-white flex flex-col leading-tight text-xs">
-                    {message.tradeData.targets.map((t, i) => <span key={i}>{t}</span>)}
-                  </div>
-                </div>
-                <div className="bg-black/20 p-2 rounded-lg border border-white/5">
-                  <div className="flex items-center gap-1 text-[10px] opacity-70 mb-1">
-                    <ShieldAlert size={10} /> STOP LOSS
-                  </div>
-                  <div className="font-semibold text-white text-xs">{message.tradeData.stopLoss}</div>
-                </div>
-              </div>
-
-              {/* NEWS SECTION */}
-              {message.tradeData.newsSummary && (
-                <div className="mb-3 bg-black/20 rounded-lg border border-white/5 p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-1.5 text-[10px] opacity-80 font-bold tracking-wide text-white">
-                      <Newspaper size={12} /> NEWS INSIGHTS (14D)
-                    </div>
-                    {message.tradeData.newsSentiment && (
-                      <span className={`text-[9px] px-1.5 py-0.5 rounded border font-medium ${
-                        message.tradeData.newsSentiment.toLowerCase().includes('positive') ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-300' :
-                        message.tradeData.newsSentiment.toLowerCase().includes('negative') ? 'bg-red-500/20 border-red-500/30 text-red-300' :
-                        'bg-yellow-500/20 border-yellow-500/30 text-yellow-300'
-                      }`}>
-                        {message.tradeData.newsSentiment.toUpperCase()}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-[11px] leading-relaxed opacity-90 text-slate-200 border-l-2 border-white/10 pl-2">
-                    {message.tradeData.newsSummary}
-                  </p>
-                </div>
-              )}
+            <div className={`w-full max-w-md mb-3 rounded-xl border shadow-lg backdrop-blur-sm overflow-hidden ${getSignalStyle(message.tradeData.signal)}`}>
               
-              <div className="text-xs opacity-80 border-t border-white/10 pt-2 italic">
-                "{message.tradeData.reasoning}"
+              {/* Card Header */}
+              <div className="px-4 py-3 bg-black/10 border-b border-white/5">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-lg font-bold text-white tracking-tight">{message.tradeData.symbol}</h2>
+                      <span className="text-xs font-mono px-2 py-0.5 rounded bg-white/10 border border-white/10 text-white/90">
+                        {message.tradeData.currentPrice}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1.5">
+                       <span className={`text-[10px] font-bold tracking-wider flex items-center gap-1 px-1.5 py-0.5 rounded ${
+                         message.tradeData.signal === 'BUY' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/20' : 
+                         message.tradeData.signal === 'SELL' ? 'bg-red-500/20 text-red-300 border border-red-500/20' : 
+                         'bg-slate-500/20 text-slate-300 border border-slate-500/20'
+                       }`}>
+                         {message.tradeData.signal}
+                       </span>
+                       <div className="flex items-center gap-1 text-[10px] text-white/60">
+                          <span className="flex items-center gap-0.5 bg-black/20 px-1.5 py-0.5 rounded border border-white/5">
+                             {message.tradeData.strategy === 'INTRADAY' ? <Clock size={9} /> : <Calendar size={9} />}
+                             {message.tradeData.strategy}
+                          </span>
+                          <span className="bg-black/20 px-1.5 py-0.5 rounded border border-white/5">
+                            Conf: {message.tradeData.confidence}
+                          </span>
+                       </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-1">
+                    {onToggleWatchlist && (
+                       <button 
+                         onClick={() => onToggleWatchlist(message.tradeData!.symbol)}
+                         className={`p-2 rounded-lg transition-colors ${isInWatchlist ? 'bg-yellow-400/20 text-yellow-400' : 'bg-black/20 text-slate-400 hover:text-white'}`}
+                         title={isInWatchlist ? "Remove from Watchlist" : "Add to Watchlist"}
+                       >
+                         <Star size={16} fill={isInWatchlist ? "currentColor" : "none"} />
+                       </button>
+                    )}
+                    <div className={`p-2 rounded-lg bg-black/20`}>
+                      {getSignalIcon(message.tradeData.signal)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card Body */}
+              <div className="p-3 space-y-3">
+                
+                {/* 1. Entry/Target/Stop Grid */}
+                <div className="grid grid-cols-3 gap-2">
+                   <div className="flex flex-col bg-black/20 rounded p-2 border border-white/5">
+                      <span className="text-[9px] uppercase opacity-60 mb-0.5 flex items-center gap-1"><CircleDollarSign size={10}/> Entry</span>
+                      <span className="text-xs font-semibold text-white leading-tight">{message.tradeData.entry}</span>
+                   </div>
+                   <div className="flex flex-col bg-black/20 rounded p-2 border border-white/5">
+                      <span className="text-[9px] uppercase opacity-60 mb-0.5 flex items-center gap-1"><Target size={10}/> Targets</span>
+                      <div className="flex flex-col">
+                        {message.tradeData.targets.map((t, i) => (
+                           <span key={i} className="text-xs font-semibold text-white leading-tight">{t}</span>
+                        ))}
+                      </div>
+                   </div>
+                   <div className="flex flex-col bg-black/20 rounded p-2 border border-white/5">
+                      <span className="text-[9px] uppercase opacity-60 mb-0.5 flex items-center gap-1"><ShieldAlert size={10}/> Stop</span>
+                      <span className="text-xs font-semibold text-white leading-tight">{message.tradeData.stopLoss}</span>
+                   </div>
+                </div>
+
+                {/* 2. Verifiable Technicals (New) */}
+                {(message.tradeData.technicals || (message.tradeData.patterns && (message.tradeData.patterns.candlestick.length > 0 || message.tradeData.patterns.chart.length > 0))) && (
+                  <div className="bg-black/10 rounded-lg border border-white/5 p-2">
+                     <div className="text-[10px] font-bold opacity-80 mb-2 flex items-center gap-1"><Activity size={12} /> TECHNICAL EVIDENCE</div>
+                     
+                     {/* Indicators */}
+                     {message.tradeData.technicals && (
+                       <div className="grid grid-cols-2 gap-2 mb-2">
+                          <div className="bg-black/20 px-2 py-1 rounded text-[10px] flex justify-between">
+                            <span className="opacity-60">RSI</span> <span className="font-mono text-white">{message.tradeData.technicals.rsi}</span>
+                          </div>
+                          <div className="bg-black/20 px-2 py-1 rounded text-[10px] flex justify-between">
+                            <span className="opacity-60">MACD</span> <span className="font-mono text-white">{message.tradeData.technicals.macd}</span>
+                          </div>
+                          <div className="bg-black/20 px-2 py-1 rounded text-[10px] flex justify-between">
+                            <span className="opacity-60">ADX</span> <span className="font-mono text-white">{message.tradeData.technicals.adx}</span>
+                          </div>
+                          <div className="bg-black/20 px-2 py-1 rounded text-[10px] flex justify-between truncate">
+                            <span className="opacity-60">EMA</span> <span className="font-mono text-white truncate ml-2">{message.tradeData.technicals.ema}</span>
+                          </div>
+                       </div>
+                     )}
+
+                     {/* Patterns */}
+                     {message.tradeData.patterns && (
+                       <div className="flex flex-wrap gap-1">
+                          {message.tradeData.patterns.candlestick?.map((p, i) => (
+                             <span key={`c-${i}`} className="text-[9px] bg-blue-500/20 text-blue-200 px-1.5 py-0.5 rounded border border-blue-500/20 flex items-center gap-1">
+                               <ScanLine size={9} /> {p}
+                             </span>
+                          ))}
+                          {message.tradeData.patterns.chart?.map((p, i) => (
+                             <span key={`ch-${i}`} className="text-[9px] bg-purple-500/20 text-purple-200 px-1.5 py-0.5 rounded border border-purple-500/20 flex items-center gap-1">
+                               <BarChart2 size={9} /> {p}
+                             </span>
+                          ))}
+                       </div>
+                     )}
+                  </div>
+                )}
+
+                {/* 3. OHLC Data (New) */}
+                {message.tradeData.recentOHLC && message.tradeData.recentOHLC.length > 0 && (
+                  <div className="bg-black/10 rounded-lg border border-white/5 p-2 overflow-hidden">
+                     <div className="text-[10px] font-bold opacity-80 mb-1.5">RECENT PRICE ACTION</div>
+                     <table className="w-full text-[9px] text-left border-collapse">
+                       <thead>
+                         <tr className="text-slate-500 border-b border-white/5">
+                           <th className="pb-1 pl-1">Time</th>
+                           <th className="pb-1">Open</th>
+                           <th className="pb-1">High</th>
+                           <th className="pb-1">Low</th>
+                           <th className="pb-1 pr-1 text-right">Close</th>
+                         </tr>
+                       </thead>
+                       <tbody>
+                         {message.tradeData.recentOHLC.map((row, i) => (
+                           <tr key={i} className="border-b border-white/5 last:border-0 text-slate-300">
+                             <td className="py-1 pl-1 font-mono opacity-70">{row.time}</td>
+                             <td className="py-1 font-mono">{row.open}</td>
+                             <td className="py-1 font-mono">{row.high}</td>
+                             <td className="py-1 font-mono">{row.low}</td>
+                             <td className={`py-1 pr-1 font-mono text-right font-semibold ${
+                               row.status === 'Green' ? 'text-emerald-400' : 'text-red-400'
+                             }`}>{row.close}</td>
+                           </tr>
+                         ))}
+                       </tbody>
+                     </table>
+                  </div>
+                )}
+
+                {/* 4. News Insights */}
+                {message.tradeData.newsSummary && (
+                  <div className={`rounded-lg border p-2.5 ${
+                    message.tradeData.newsSentiment?.toLowerCase().includes('positive') ? 'bg-emerald-900/10 border-emerald-500/10' :
+                    message.tradeData.newsSentiment?.toLowerCase().includes('negative') ? 'bg-red-900/10 border-red-500/10' :
+                    'bg-yellow-900/10 border-yellow-500/10'
+                  }`}>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-1.5 text-[10px] font-bold opacity-90">
+                        <Newspaper size={12} /> MARKET CONTEXT
+                      </div>
+                      {message.tradeData.newsSentiment && (
+                        <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase border ${
+                          message.tradeData.newsSentiment.toLowerCase().includes('positive') ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10' :
+                          message.tradeData.newsSentiment.toLowerCase().includes('negative') ? 'text-red-400 border-red-500/20 bg-red-500/10' :
+                          'text-yellow-400 border-yellow-500/20 bg-yellow-500/10'
+                        }`}>
+                          {message.tradeData.newsSentiment}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[11px] leading-snug opacity-80 text-slate-200 border-l-2 pl-2 border-white/10">
+                      {message.tradeData.newsSummary}
+                    </p>
+                  </div>
+                )}
+                
+                {/* Reasoning Footer */}
+                <div className="text-[11px] leading-relaxed opacity-70 italic border-t border-white/10 pt-2 mt-1">
+                  "{message.tradeData.reasoning}"
+                </div>
               </div>
             </div>
           )}
