@@ -23,7 +23,6 @@ const App: React.FC = () => {
             </div>
           </div>
           <div className="hidden md:flex items-center gap-4 text-sm text-slate-400">
-            <span className="px-2 py-1 rounded bg-slate-800 border border-slate-700">Gemini 3 Pro</span>
             <span className="px-2 py-1 rounded bg-slate-800 border border-slate-700">Real-time Search</span>
           </div>
         </div>

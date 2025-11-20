@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Star, Trash2, Plus, TrendingUp, Layers, List, Check, BarChart4, PieChart, Globe } from 'lucide-react';
+import { Star, Trash2, Plus, TrendingUp, Layers, List, Check, BarChart4, PieChart, Globe, Search, X } from 'lucide-react';
 
 interface WatchlistPanelProps {
   watchlist: string[];
@@ -44,7 +44,6 @@ const NIFTY_NEXT_50 = [
   "TVSMOTOR", "UBL", "UNITEDSPIRITS", "VEDL", "ZOMATO", "ZYDUSLIFE"
 ];
 
-// A representative selection of Midcap stocks to round out the Nifty 200 list
 const MIDCAP_SELECT = [
     "ACC", "APLAPOLLO", "ASTRAL", "AUROPHARMA", "BALKRISIND", "BHARATFORG", 
     "CUMMINSIND", "FEDERALBNK", "INDHOTEL", "MPHASIS", "MRF", "OFSS", 
@@ -60,7 +59,6 @@ const MIDCAP_SELECT = [
     "TATAPOWER", "TATAELXSI", "JKCEMENT", "KAJARIACER", "KEI"
 ];
 
-// Representative Smallcap/Lower-Midcap stocks to approximate Nifty 500 coverage
 const SMALLCAP_SELECT = [
   "ALOKINDS", "AMBER", "ANGELONE", "ANURAS", "ASTERDM", "AVANTIFEED", "BASF",
   "BCG", "BEML", "BIRLACORPN", "BLS", "BLUESTARCO", "BORORENEW", "BSE", "BSOFT",
@@ -89,7 +87,6 @@ const SMALLCAP_SELECT = [
   "YESBANK", "ZENSARTECH"
 ];
 
-// Derived Lists
 const NIFTY_100 = [...NIFTY_50, ...NIFTY_NEXT_50].sort();
 const NIFTY_200 = [...NIFTY_100, ...MIDCAP_SELECT].sort();
 const NIFTY_500 = [...NIFTY_200, ...SMALLCAP_SELECT].sort();
@@ -132,140 +129,158 @@ export const WatchlistPanel: React.FC<WatchlistPanelProps> = ({
 
   const displayList = getDisplayList();
 
-  const TabButton = ({ id, label, icon: Icon }: { id: Tab, label: string, icon: any }) => (
+  const TabButton = ({ id, label, icon: Icon, colorClass }: { id: Tab, label: string, icon: any, colorClass: string }) => (
     <button
       onClick={() => setActiveTab(id)}
-      className={`flex-shrink-0 flex items-center justify-center gap-1.5 px-3 py-1.5 text-[10px] font-medium rounded-md transition-all whitespace-nowrap ${
+      className={`relative w-full flex flex-col items-center justify-center gap-1 py-3 px-1 transition-all duration-200 group ${
         activeTab === id 
-          ? 'bg-slate-800 text-white shadow-sm border border-slate-700' 
-          : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50'
+          ? 'text-white' 
+          : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900/50'
       }`}
     >
-      <Icon size={12} /> {label}
+      {activeTab === id && (
+        <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-emerald-500 rounded-r-full" />
+      )}
+      <div className={`p-2 rounded-lg transition-all ${activeTab === id ? 'bg-slate-800 shadow-md ring-1 ring-slate-700' : ''}`}>
+        <Icon size={18} className={activeTab === id ? colorClass : ''} />
+      </div>
+      <span className="text-[9px] font-medium tracking-wide opacity-80">{label}</span>
     </button>
   );
 
   return (
-    <div className="w-full md:w-80 flex-none bg-slate-900/50 border-l border-slate-800 flex flex-col h-full backdrop-blur-sm transition-all">
-      {/* Header */}
-      <div className="p-4 border-b border-slate-800 bg-slate-900/80">
-        <div className="flex items-center justify-between mb-4">
-           <div className="flex items-center gap-2 text-emerald-400">
-            <Layers className="w-5 h-5" />
-            <h2 className="font-bold text-sm tracking-wider">MARKET WATCH</h2>
-          </div>
-          <div className="text-[10px] text-slate-500 font-mono uppercase">{tradingMode} MODE</div>
+    <div className="w-full md:w-80 flex-none bg-slate-950 border-l border-slate-800 flex h-full backdrop-blur-sm overflow-hidden">
+      
+      {/* Left Navigation Rail */}
+      <div className="w-[72px] flex-none flex flex-col items-center bg-slate-950 border-r border-slate-800 py-2 gap-1 z-10">
+        <div className="mb-2 p-2">
+           <Layers className="text-emerald-500 w-6 h-6" />
         </div>
-        
-        {/* Search / Add Input */}
-        <form onSubmit={handleSubmit} className="relative mb-3">
-          <input
-            type="text"
-            value={activeTab === 'saved' ? input : filter}
-            onChange={(e) => activeTab === 'saved' ? setInput(e.target.value) : setFilter(e.target.value)}
-            placeholder={activeTab === 'saved' ? "Add symbol (e.g. ZOMATO)" : "Filter list..."}
-            className="w-full bg-slate-950 border border-slate-700 rounded-lg py-2 pl-3 pr-8 text-xs text-slate-200 focus:outline-none focus:border-emerald-500/50 placeholder-slate-600 transition-colors"
-          />
-          <button 
-            type={activeTab === 'saved' ? 'submit' : 'button'}
-            disabled={activeTab === 'saved' && !input.trim()}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-emerald-400 disabled:opacity-50"
-          >
-            {activeTab === 'saved' ? <Plus size={14} /> : null}
-          </button>
-        </form>
-
-        {/* Tabs - Scrollable */}
-        <div className="flex gap-1 p-1 bg-slate-950 rounded-lg border border-slate-800 overflow-x-auto scrollbar-thin pb-2">
-          <TabButton id="saved" label="Saved" icon={Star} />
-          <TabButton id="indices" label="Indices" icon={Layers} />
-          <TabButton id="stocks" label="Nifty 50" icon={List} />
-          <TabButton id="nifty100" label="Nifty 100" icon={BarChart4} />
-          <TabButton id="nifty200" label="Nifty 200" icon={PieChart} />
-          <TabButton id="nifty500" label="Nifty 500" icon={Globe} />
+        <div className="flex-1 w-full flex flex-col gap-1 overflow-y-auto scrollbar-none">
+          <TabButton id="saved" label="Saved" icon={Star} colorClass="text-yellow-400" />
+          <TabButton id="indices" label="Indices" icon={BarChart4} colorClass="text-blue-400" />
+          <TabButton id="stocks" label="Nifty 50" icon={List} colorClass="text-emerald-400" />
+          <TabButton id="nifty100" label="Top 100" icon={PieChart} colorClass="text-purple-400" />
+          <TabButton id="nifty200" label="Top 200" icon={TrendingUp} colorClass="text-orange-400" />
+          <TabButton id="nifty500" label="All 500" icon={Globe} colorClass="text-indigo-400" />
         </div>
       </div>
 
-      {/* List Area */}
-      <div className="flex-1 overflow-y-auto p-2 space-y-1.5 scrollbar-thin bg-gradient-to-b from-transparent to-slate-950/50">
-        {displayList.length === 0 ? (
-          <div className="text-center p-8 text-slate-600 flex flex-col items-center">
-            <div className="w-10 h-10 rounded-full bg-slate-800/50 flex items-center justify-center mb-3">
-              {activeTab === 'saved' ? <Star size={16} /> : <List size={16} />}
-            </div>
-            <p className="text-xs mb-1">No items found</p>
-            <p className="text-[10px] opacity-60">
-              {activeTab === 'saved' ? "Add symbols to track them" : "Try a different search"}
-            </p>
-          </div>
-        ) : (
-          displayList.map((symbol) => {
-            const isSaved = watchlist.includes(symbol);
-            return (
-              <div 
-                key={symbol}
-                className="group flex items-center justify-between p-2.5 rounded-lg bg-slate-800/20 border border-slate-800/50 hover:border-slate-600 hover:bg-slate-800/80 transition-all cursor-pointer"
-                onClick={() => onSelect(symbol)}
+      {/* Right Content Area */}
+      <div className="flex-1 flex flex-col min-w-0 bg-slate-900/30">
+        
+        {/* Header & Search */}
+        <div className="p-3 border-b border-slate-800 bg-slate-900/50 backdrop-blur-sm">
+           <div className="flex items-center justify-between mb-2">
+             <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider">
+               {activeTab === 'saved' ? 'My Watchlist' : activeTab.replace('nifty', 'Nifty ').replace('stocks', 'Nifty 50').toUpperCase()}
+             </h3>
+             <span className="text-[10px] text-emerald-500/80 font-mono bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+               {displayList.length}
+             </span>
+           </div>
+
+           <form onSubmit={handleSubmit} className="relative group">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 w-3.5 h-3.5 group-focus-within:text-emerald-400 transition-colors" />
+            <input
+              type="text"
+              value={activeTab === 'saved' ? input : filter}
+              onChange={(e) => activeTab === 'saved' ? setInput(e.target.value) : setFilter(e.target.value)}
+              placeholder={activeTab === 'saved' ? "Add Symbol..." : "Filter..."}
+              className="w-full bg-slate-950 border border-slate-700 rounded-lg py-2 pl-8 pr-8 text-xs text-slate-200 focus:outline-none focus:border-emerald-500/50 placeholder-slate-600 transition-all shadow-inner"
+            />
+            {(activeTab === 'saved' ? input : filter) && (
+              <button 
+                type="button"
+                onClick={() => activeTab === 'saved' ? setInput('') : setFilter('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
               >
-                <div className="flex items-center gap-3 flex-1 overflow-hidden">
-                  <div className={`w-8 h-8 rounded flex-shrink-0 flex items-center justify-center text-slate-400 transition-colors ${
-                    activeTab === 'indices' ? 'bg-blue-900/20 text-blue-400' : 
-                    activeTab === 'stocks' ? 'bg-emerald-900/20 text-emerald-400' : 
-                    activeTab === 'nifty100' ? 'bg-purple-900/20 text-purple-400' :
-                    activeTab === 'nifty200' ? 'bg-orange-900/20 text-orange-400' :
-                    activeTab === 'nifty500' ? 'bg-indigo-900/20 text-indigo-400' :
-                    'bg-slate-700'
-                  }`}>
-                    <TrendingUp size={14} />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="font-bold text-xs text-slate-200 group-hover:text-white truncate">{symbol}</div>
-                    <div className="text-[10px] text-slate-500 group-hover:text-emerald-400/70 flex items-center gap-1 transition-colors">
-                      Analyze
+                <X size={12} />
+              </button>
+            )}
+            {activeTab === 'saved' && input && (
+              <button 
+                 type="submit"
+                 className="absolute right-2 top-1/2 -translate-y-1/2 text-emerald-400 hover:text-emerald-300 hidden group-focus-within:block"
+              >
+                <Plus size={14} />
+              </button>
+            )}
+          </form>
+        </div>
+
+        {/* Scrollable List */}
+        <div className="flex-1 overflow-y-auto p-2 space-y-1 scrollbar-thin">
+          {displayList.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center text-slate-600 opacity-60">
+              <div className="p-3 bg-slate-800/50 rounded-full mb-2">
+                <Search size={18} />
+              </div>
+              <p className="text-xs">No symbols found</p>
+            </div>
+          ) : (
+            displayList.map((symbol) => {
+              const isSaved = watchlist.includes(symbol);
+              return (
+                <div 
+                  key={symbol}
+                  className="group flex items-center justify-between p-2 rounded-md bg-slate-800/40 border border-transparent hover:border-slate-700 hover:bg-slate-800 transition-all cursor-pointer"
+                  onClick={() => onSelect(symbol)}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className={`w-1 h-8 rounded-full ${
+                       activeTab === 'indices' ? 'bg-blue-500' : 
+                       activeTab === 'stocks' ? 'bg-emerald-500' : 
+                       activeTab === 'saved' ? 'bg-yellow-500' :
+                       'bg-slate-600'
+                    } opacity-40 group-hover:opacity-100 transition-opacity`} />
+                    
+                    <div className="min-w-0">
+                      <div className="font-semibold text-xs text-slate-300 group-hover:text-white truncate">{symbol}</div>
+                      <div className="text-[9px] text-slate-500 group-hover:text-emerald-400/80 flex items-center gap-1">
+                        Click to analyze
+                      </div>
                     </div>
                   </div>
+                  
+                  {activeTab === 'saved' ? (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRemove(symbol);
+                      }}
+                      className="p-1.5 text-slate-600 hover:text-red-400 hover:bg-red-500/10 rounded-md opacity-0 group-hover:opacity-100 transition-all"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!isSaved) onAdd(symbol);
+                        else onRemove(symbol);
+                      }}
+                      className={`p-1.5 rounded-md transition-all ${
+                        isSaved 
+                          ? 'text-yellow-400 bg-yellow-400/10 opacity-100' 
+                          : 'text-slate-600 hover:text-white hover:bg-slate-700 opacity-0 group-hover:opacity-100'
+                      }`}
+                    >
+                      {isSaved ? <Check size={13} /> : <Plus size={13} />}
+                    </button>
+                  )}
                 </div>
-                
-                {activeTab === 'saved' ? (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onRemove(symbol);
-                    }}
-                    className="p-2 text-slate-600 hover:text-red-400 hover:bg-red-400/10 rounded opacity-0 group-hover:opacity-100 transition-all"
-                    title="Remove from watchlist"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                ) : (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (!isSaved) onAdd(symbol);
-                      else onRemove(symbol);
-                    }}
-                    className={`p-2 rounded transition-all ${
-                      isSaved 
-                        ? 'text-yellow-400 bg-yellow-400/10 opacity-100' 
-                        : 'text-slate-600 hover:text-white hover:bg-slate-700 opacity-0 group-hover:opacity-100'
-                    }`}
-                    title={isSaved ? "In Watchlist" : "Add to Watchlist"}
-                  >
-                    {isSaved ? <Check size={14} /> : <Plus size={14} />}
-                  </button>
-                )}
-              </div>
-            );
-          })
-        )}
-      </div>
-      
-      <div className="p-2 border-t border-slate-800 text-center bg-slate-900/50">
-        <p className="text-[9px] text-slate-600">
-          {activeTab === 'saved' 
-            ? `${watchlist.length} items saved` 
-            : "Select an item to analyze or add to watchlist"}
-        </p>
+              );
+            })
+          )}
+        </div>
+        
+        {/* Footer Info */}
+        <div className="p-2 border-t border-slate-800 bg-slate-950 text-center">
+          <p className="text-[9px] text-slate-600 font-medium">
+             Mode: <span className={tradingMode === 'INTRADAY' ? "text-blue-400" : "text-emerald-400"}>{tradingMode}</span>
+          </p>
+        </div>
       </div>
     </div>
   );

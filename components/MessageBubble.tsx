@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Role, Message } from '../types';
-import { User, Bot, ExternalLink, TrendingUp, TrendingDown, MinusCircle, Target, ShieldAlert, CircleDollarSign, Clock, Calendar, Star } from 'lucide-react';
+import { User, Bot, ExternalLink, TrendingUp, TrendingDown, MinusCircle, Target, ShieldAlert, CircleDollarSign, Clock, Calendar, Star, Newspaper } from 'lucide-react';
 
 interface MessageBubbleProps {
   message: Message;
@@ -71,33 +71,33 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onToggleW
                     </span>
                   </div>
                 </div>
-                
-                <div className="flex items-center gap-2">
-                  <button 
-                    onClick={() => onToggleWatchlist && onToggleWatchlist(message.tradeData!.symbol)}
-                    className={`p-2 rounded-lg transition-colors ${isInWatchlist ? 'text-yellow-400 bg-yellow-400/10' : 'text-white/40 hover:text-white bg-black/20 hover:bg-black/40'}`}
-                    title={isInWatchlist ? "Remove from watchlist" : "Add to watchlist"}
-                  >
-                    <Star size={18} fill={isInWatchlist ? "currentColor" : "none"} />
-                  </button>
+                <div className="flex gap-2">
+                  {onToggleWatchlist && (
+                     <button 
+                       onClick={() => onToggleWatchlist(message.tradeData!.symbol)}
+                       className={`p-2 rounded-lg transition-colors ${isInWatchlist ? 'bg-yellow-400/20 text-yellow-400' : 'bg-black/20 text-slate-400 hover:text-white'}`}
+                     >
+                       <Star size={16} fill={isInWatchlist ? "currentColor" : "none"} />
+                     </button>
+                  )}
                   <div className={`p-2 rounded-lg bg-black/20`}>
                     {getSignalIcon(message.tradeData.signal)}
                   </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 text-sm">
+              <div className="grid grid-cols-3 gap-2 text-sm mb-3">
                 <div className="bg-black/20 p-2 rounded-lg border border-white/5">
                   <div className="flex items-center gap-1 text-[10px] opacity-70 mb-1">
                     <CircleDollarSign size={10} /> ENTRY
                   </div>
-                  <div className="font-semibold text-white">{message.tradeData.entry}</div>
+                  <div className="font-semibold text-white text-xs">{message.tradeData.entry}</div>
                 </div>
                 <div className="bg-black/20 p-2 rounded-lg border border-white/5">
                   <div className="flex items-center gap-1 text-[10px] opacity-70 mb-1">
                     <Target size={10} /> TARGETS
                   </div>
-                  <div className="font-semibold text-white flex flex-col leading-tight">
+                  <div className="font-semibold text-white flex flex-col leading-tight text-xs">
                     {message.tradeData.targets.map((t, i) => <span key={i}>{t}</span>)}
                   </div>
                 </div>
@@ -105,11 +105,34 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onToggleW
                   <div className="flex items-center gap-1 text-[10px] opacity-70 mb-1">
                     <ShieldAlert size={10} /> STOP LOSS
                   </div>
-                  <div className="font-semibold text-white">{message.tradeData.stopLoss}</div>
+                  <div className="font-semibold text-white text-xs">{message.tradeData.stopLoss}</div>
                 </div>
               </div>
+
+              {/* NEWS SECTION */}
+              {message.tradeData.newsSummary && (
+                <div className="mb-3 bg-black/20 rounded-lg border border-white/5 p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-1.5 text-[10px] opacity-80 font-bold tracking-wide text-white">
+                      <Newspaper size={12} /> NEWS INSIGHTS (14D)
+                    </div>
+                    {message.tradeData.newsSentiment && (
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded border font-medium ${
+                        message.tradeData.newsSentiment.toLowerCase().includes('positive') ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-300' :
+                        message.tradeData.newsSentiment.toLowerCase().includes('negative') ? 'bg-red-500/20 border-red-500/30 text-red-300' :
+                        'bg-yellow-500/20 border-yellow-500/30 text-yellow-300'
+                      }`}>
+                        {message.tradeData.newsSentiment.toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] leading-relaxed opacity-90 text-slate-200 border-l-2 border-white/10 pl-2">
+                    {message.tradeData.newsSummary}
+                  </p>
+                </div>
+              )}
               
-              <div className="mt-3 text-xs opacity-80 border-t border-white/10 pt-2 italic">
+              <div className="text-xs opacity-80 border-t border-white/10 pt-2 italic">
                 "{message.tradeData.reasoning}"
               </div>
             </div>

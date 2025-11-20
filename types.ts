@@ -15,6 +15,8 @@ export interface TradeData {
   stopLoss: string;
   targets: string[];
   reasoning: string;
+  newsSummary?: string; // New field for news analysis
+  newsSentiment?: 'Positive' | 'Negative' | 'Neutral'; // New field for sentiment
 }
 
 export interface Message {

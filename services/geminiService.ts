@@ -11,35 +11,32 @@ You are an elite Algorithmic ${mode} Trading Assistant specializing in the India
 Your STRICT objective is to provide "Real-Time" actionable signals based on the latest available data.
 
 ### OPERATION PROTOCOL:
+
 1.  **LIVE DATA FETCH (MANDATORY):**
-    *   Use Google Search to find the **exact current price** (last traded price) of the stock.
-    *   Verify the data is from **today** (or the last trading session if market is closed).
-    *   Check for real-time intraday volatility and volume spikes.
+    *   Use Google Search to find the **exact current price** (last traded price).
+    *   Verify the data is from **today** (or the last trading session).
 
-2.  **ADVANCED TECHNICAL ANALYSIS (REQUIRED):**
-    Perform a deep-dive using the following indicators:
-    *   **Trend & Momentum:**
-        *   **EMA:** Analyze price relative to 9, 21, 50, and 200 EMAs. Look for Crossovers (Golden/Death Cross).
-        *   **ADX (Avg Directional Index):** Confirm trend strength (ADX > 25 indicates strong trend).
-        *   **RSI & MACD:** Identify Overbought/Oversold zones and Divergences.
-    *   **Volatility & Risk:**
-        *   **Bollinger Bands:** Identify squeezes (potential breakout) or band walks.
-        *   **ATR (Average True Range):** Calculate volatility-based Stop Loss levels.
-    *   **Support & Resistance:**
-        *   **Pivot Points:** Identify CPR, R1/S1 levels (Critical for Intraday).
-        *   **Fibonacci Retracements:** Check key levels (0.382, 0.5, 0.618) for pullbacks/reversals.
-    *   **Price Action:**
-        *   Candlestick Patterns (e.g., Hammer, Engulfing) on ${mode === 'INTRADAY' ? '5-min/15-min' : 'Daily/Weekly'} charts.
-        *   Chart Patterns (Flags, Triangles, Head & Shoulders).
+2.  **NEWS & SENTIMENT ANALYSIS (Last 14 Days):**
+    *   **Search Query:** Perform a specific search for "[Stock Symbol] news India last 2 weeks".
+    *   **Events:** Look for Earnings reports, Board meetings, Order wins, Government policy changes, or Global cues affecting the sector.
+    *   **Sentiment:** Determine if the recent news flow is **Positive**, **Negative**, or **Neutral**.
+    *   **Impact:** Adjust your Buy/Sell decision based on this news. *Do not ignore bad news even if technicals are good.*
 
-3.  **SIGNAL GENERATION:**
+3.  **ADVANCED TECHNICAL ANALYSIS (REQUIRED):**
+    *   **Trend:** EMA (9, 21, 50, 200), ADX (>25?).
+    *   **Momentum:** RSI, MACD Divergences.
+    *   **Volatility:** Bollinger Bands, ATR.
+    *   **Structure:** Pivot Points, Fibonacci, Patterns (Head & Shoulders, Flags).
+    *   **Timeframe:** ${mode === 'INTRADAY' ? '5-min / 15-min' : 'Daily / Weekly'}.
+
+4.  **SIGNAL GENERATION:**
     *   Decide: **BUY**, **SELL**, or **NEUTRAL/WAIT**.
-    *   **Entry:** Define precise entry range.
-    *   **Stop Loss:** MUST be technical (e.g., "Close below 50 EMA" or "2x ATR").
-    *   **Targets:** Set multiple targets with min 1:2 Risk-Reward.
+    *   **Entry:** Precise range.
+    *   **Stop Loss:** Technical level (Swing low / EMA).
+    *   **Targets:** Min 1:2 Risk-Reward.
 
 ### RESPONSE FORMAT:
-1.  **Analysis Text (Markdown):** detailed analysis covering the indicators above.
+1.  **Analysis Text (Markdown):** Detailed technical and fundamental breakdown.
 2.  **Structured Data (JSON):** A strict JSON block at the VERY END.
 
 **JSON BLOCK STRUCTURE (Raw text in code block):**
@@ -53,7 +50,9 @@ Your STRICT objective is to provide "Real-Time" actionable signals based on the 
   "entry": "2440-2450",
   "stopLoss": "2380",
   "targets": ["2550", "2650"],
-  "reasoning": "Bounce off 0.618 Fib + RSI Divergence + Above 20 EMA"
+  "reasoning": "Technicals: Breakout above 50 EMA. Fundamentals: Positive news regarding retail arm expansion.",
+  "newsSummary": "Reliance Retail secured massive funding; Oil refining margins improved in last 2 weeks.",
+  "newsSentiment": "Positive"
 }
 \`\`\`
 `;
@@ -68,7 +67,7 @@ export const sendMessageToGemini = async (
       model: MODEL_NAME,
       config: {
         systemInstruction: getSystemInstruction(tradingMode),
-        temperature: 0.5, // Balanced for creativity in analysis but precision in data
+        temperature: 0.4, // Slightly lower to keep news analysis grounded in fact
         tools: [{ googleSearch: {} }],
         thinkingConfig: { thinkingBudget: 4096 }, 
       },
@@ -76,7 +75,7 @@ export const sendMessageToGemini = async (
     });
 
     const result: GenerateContentResponse = await chat.sendMessage({
-      message: `Analyze ${message} for a ${tradingMode} trade setup. Find the latest realtime price.`,
+      message: `Analyze ${message} for a ${tradingMode} trade. 1. Find real-time price. 2. Search for MAJOR news in last 14 days and factor it into the decision.`,
     });
 
     const fullText = result.text || "I couldn't generate a response. Please try again.";
@@ -91,7 +90,7 @@ export const sendMessageToGemini = async (
     if (match && match[1]) {
       try {
         tradeData = JSON.parse(match[1]);
-        // Remove the JSON block from the display text to avoid duplication
+        // Remove the JSON block from the display text
         displayText = fullText.replace(match[0], '').trim();
       } catch (e) {
         console.error("Failed to parse trade signal JSON:", e);
