@@ -1,0 +1,5 @@
+{
+  "name": "Copy of TradeMind AI",
+  "description": "An AI-powered swing trading assistant for the Indian stock market, utilizing Gemini 3 Pro with search grounding to analyze technicals and generate signals.",
+  "requestFramePermissions": []
+}
