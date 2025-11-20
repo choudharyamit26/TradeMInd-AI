@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Star, Trash2, Plus, TrendingUp, Layers, List, Check } from 'lucide-react';
+import { Star, Trash2, Plus, TrendingUp, Layers, List, Check, BarChart4, PieChart, Globe } from 'lucide-react';
 
 interface WatchlistPanelProps {
   watchlist: string[];
@@ -9,7 +9,8 @@ interface WatchlistPanelProps {
   tradingMode: string;
 }
 
-// Predefined Market Data
+// --- DATA DEFINITIONS ---
+
 const INDICES = [
   "NIFTY 50", "BANKNIFTY", "FINNIFTY", "SENSEX", "INDIA VIX",
   "NIFTY MIDCAP 100", "NIFTY SMALLCAP 100", "NIFTY NEXT 50",
@@ -32,7 +33,68 @@ const NIFTY_50 = [
   "ULTRACEMCO", "WIPRO"
 ];
 
-type Tab = 'saved' | 'indices' | 'stocks';
+const NIFTY_NEXT_50 = [
+  "ABB", "ADANIENSOL", "ADANIGREEN", "ADANIPOWER", "ATGL", "AMBUJACEM", 
+  "BANKBARODA", "BERGEPAINT", "BHEL", "BOSCHLTD", "CANBK", "CHOLAFIN", 
+  "COLPAL", "DLF", "DMART", "GAIL", "GODREJCP", "HAL", "HAVELLS", 
+  "HDFCAMC", "HINDPETRO", "ICICIGI", "ICICIPRULI", "IOC", "IRCTC", 
+  "JINDALSTEL", "JIOFIN", "JSWINFRA", "LICI", "LUPIN", "MARICO", 
+  "MOTHERSON", "NAUKRI", "PIDILITIND", "PNB", "PFC", "PGHH", "PIIND", 
+  "RECLTD", "SBICARD", "SHREECEM", "SIEMENS", "SRF", "TORNTPHARM", 
+  "TVSMOTOR", "UBL", "UNITEDSPIRITS", "VEDL", "ZOMATO", "ZYDUSLIFE"
+];
+
+// A representative selection of Midcap stocks to round out the Nifty 200 list
+const MIDCAP_SELECT = [
+    "ACC", "APLAPOLLO", "ASTRAL", "AUROPHARMA", "BALKRISIND", "BHARATFORG", 
+    "CUMMINSIND", "FEDERALBNK", "INDHOTEL", "MPHASIS", "MRF", "OFSS", 
+    "PAGEIND", "PETRONET", "POLYCAB", "TATACOMM", "VOLTAS", "ASHOKLEY", 
+    "BALRAMCHIN", "BANDHANBNK", "BANKINDIA", "BATAINDIA", "COFORGE", 
+    "CONCOR", "COROMANDEL", "CROMPTON", "DALBHARAT", "DEEPAKNTR", 
+    "DELTACORP", "ESCORTS", "FORTIS", "GLENMARK", "GMRINFRA", "GODREJPROP", 
+    "GRANULES", "GUJGASLTD", "HAPPSTMNDS", "HINDCOPPER", "IDFCFIRSTB", 
+    "IGL", "INDIGOPNTS", "IPCALAB", "JSL", "JUBLFOOD", "LALPATHLAB", 
+    "LAURUSLABS", "L&TFH", "MANAPPURAM", "MFSL", "M&MFIN", "NAM-INDIA", 
+    "NATIONALUM", "NAVINFLUOR", "OBEROIRLTY", "PERSISTENT", "PVRINOX", 
+    "RAIN", "RAMCOCEM", "RBLBANK", "SAIL", "SUNTV", "SYNGENE", "TATACHEM", 
+    "TATAPOWER", "TATAELXSI", "JKCEMENT", "KAJARIACER", "KEI"
+];
+
+// Representative Smallcap/Lower-Midcap stocks to approximate Nifty 500 coverage
+const SMALLCAP_SELECT = [
+  "ALOKINDS", "AMBER", "ANGELONE", "ANURAS", "ASTERDM", "AVANTIFEED", "BASF",
+  "BCG", "BEML", "BIRLACORPN", "BLS", "BLUESTARCO", "BORORENEW", "BSE", "BSOFT",
+  "CAMPUS", "CAMS", "CASTROLIND", "CDSL", "CENTURYPLY", "CESC", "CHAMBLFERT",
+  "CHEMPLASTS", "CHOLAHLDNG", "CIEINDIA", "CREDITACC", "CYIENT", "DATAPATTNS",
+  "DCMSHRIRAM", "DEEPAKFERT", "DEVYANI", "ECLERX", "EIDPARRY", "EIHOTEL",
+  "ELGIEQUIP", "ENDURANCE", "ENGINERSIN", "EPL", "EQUITASBNK", "ERIS", "EXIDEIND",
+  "FSL", "GLS", "GMMPFAUDLR", "GNFC", "GODFRYPHLP", "GPPL", "GRAPHITE", "GRINDWELL",
+  "GSFC", "GSPL", "HEG", "HFCL", "HIKAL", "HINDZINC", "HITACHI", "HONAUT",
+  "HSCL", "HUDCO", "IEX", "IDBI", "IDFC", "IIFL", "INDDIAM", "INDIAMART",
+  "INDIANB", "INDIGOREM", "INTELLECT", "IOB", "IRFC", "IRCON", "ITI", "J&KBANK",
+  "JBCHEPHARM", "JINDALSAW", "JKLAKSHMI", "JKPAPER", "JKTYRE", "JYOTHYLAB",
+  "KALYANKJIL", "KARURVYSYA", "KEC", "KNRCON", "KPITTECH", "KRBL", "KSB",
+  "LATENTVIEW", "LAXMIMACH", "LEMONTREE", "LICHSGFIN", "LINDEINDIA", "MAHABANK",
+  "MAHLIFE", "MANINFRA", "MAPMYINDIA", "MASTEK", "MAZAGONDOC", "MCX", "METROPOLIS",
+  "MGL", "MMTC", "MOIL", "MRPL", "MSTCLTD", "MTARTECH", "NBCC", "NCC", "NH",
+  "NHPC", "NLCINDIA", "NMDC", "NSL", "NUVAMA", "OLECTRA", "OIL", "PATANJALI",
+  "PPLPHARMA", "PRAJIND", "PRESTIGE", "PRINCEPIPE", "PRISMJOHN", "QUESS",
+  "RADICO", "RAILTEL", "RAJESHEXPO", "RATNAMANI", "RAYMOND", "RCF", "REDINGTON",
+  "RENUKA", "RHIM", "RITES", "ROSSARI", "ROUTE", "RVNL", "SAPPHIRE", "SCI",
+  "SHYAMMETL", "SJVN", "SKFINDIA", "SOBHA", "SONACOMS", "STARHEALTH", "STLTECH",
+  "SUMICHEM", "SUNDARMFIN", "SUNDRMFAST", "SUNTECK", "SUPRAJIT", "SUZLON",
+  "SWANENERGY", "TANLA", "TATAINVEST", "TEJASNET", "TITAGARH", "TRITURBINE",
+  "TRIVENI", "UCOBANK", "UNIONBANK", "UTIAMC", "VAIBHAVGBL", "VAKRANGEE",
+  "VARROC", "VGUARD", "VIPIND", "WELCORP", "WELSPUNLIV", "WESTLIFE", "WHIRLPOOL",
+  "YESBANK", "ZENSARTECH"
+];
+
+// Derived Lists
+const NIFTY_100 = [...NIFTY_50, ...NIFTY_NEXT_50].sort();
+const NIFTY_200 = [...NIFTY_100, ...MIDCAP_SELECT].sort();
+const NIFTY_500 = [...NIFTY_200, ...SMALLCAP_SELECT].sort();
+
+type Tab = 'saved' | 'indices' | 'stocks' | 'nifty100' | 'nifty200' | 'nifty500';
 
 export const WatchlistPanel: React.FC<WatchlistPanelProps> = ({
   watchlist,
@@ -58,6 +120,9 @@ export const WatchlistPanel: React.FC<WatchlistPanelProps> = ({
     if (activeTab === 'saved') list = watchlist;
     else if (activeTab === 'indices') list = INDICES;
     else if (activeTab === 'stocks') list = NIFTY_50;
+    else if (activeTab === 'nifty100') list = NIFTY_100;
+    else if (activeTab === 'nifty200') list = NIFTY_200;
+    else if (activeTab === 'nifty500') list = NIFTY_500;
 
     if (filter) {
       return list.filter(item => item.toLowerCase().includes(filter.toLowerCase()));
@@ -66,6 +131,19 @@ export const WatchlistPanel: React.FC<WatchlistPanelProps> = ({
   };
 
   const displayList = getDisplayList();
+
+  const TabButton = ({ id, label, icon: Icon }: { id: Tab, label: string, icon: any }) => (
+    <button
+      onClick={() => setActiveTab(id)}
+      className={`flex-shrink-0 flex items-center justify-center gap-1.5 px-3 py-1.5 text-[10px] font-medium rounded-md transition-all whitespace-nowrap ${
+        activeTab === id 
+          ? 'bg-slate-800 text-white shadow-sm border border-slate-700' 
+          : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50'
+      }`}
+    >
+      <Icon size={12} /> {label}
+    </button>
+  );
 
   return (
     <div className="w-full md:w-80 flex-none bg-slate-900/50 border-l border-slate-800 flex flex-col h-full backdrop-blur-sm transition-all">
@@ -97,38 +175,14 @@ export const WatchlistPanel: React.FC<WatchlistPanelProps> = ({
           </button>
         </form>
 
-        {/* Tabs */}
-        <div className="flex p-1 bg-slate-950 rounded-lg border border-slate-800">
-          <button
-            onClick={() => setActiveTab('saved')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[10px] font-medium rounded-md transition-all ${
-              activeTab === 'saved' 
-                ? 'bg-slate-800 text-white shadow-sm' 
-                : 'text-slate-500 hover:text-slate-300'
-            }`}
-          >
-            <Star size={12} /> Saved
-          </button>
-          <button
-            onClick={() => setActiveTab('indices')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[10px] font-medium rounded-md transition-all ${
-              activeTab === 'indices' 
-                ? 'bg-slate-800 text-white shadow-sm' 
-                : 'text-slate-500 hover:text-slate-300'
-            }`}
-          >
-            <Layers size={12} /> Indices
-          </button>
-          <button
-            onClick={() => setActiveTab('stocks')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-[10px] font-medium rounded-md transition-all ${
-              activeTab === 'stocks' 
-                ? 'bg-slate-800 text-white shadow-sm' 
-                : 'text-slate-500 hover:text-slate-300'
-            }`}
-          >
-            <List size={12} /> Nifty 50
-          </button>
+        {/* Tabs - Scrollable */}
+        <div className="flex gap-1 p-1 bg-slate-950 rounded-lg border border-slate-800 overflow-x-auto scrollbar-thin pb-2">
+          <TabButton id="saved" label="Saved" icon={Star} />
+          <TabButton id="indices" label="Indices" icon={Layers} />
+          <TabButton id="stocks" label="Nifty 50" icon={List} />
+          <TabButton id="nifty100" label="Nifty 100" icon={BarChart4} />
+          <TabButton id="nifty200" label="Nifty 200" icon={PieChart} />
+          <TabButton id="nifty500" label="Nifty 500" icon={Globe} />
         </div>
       </div>
 
@@ -156,7 +210,11 @@ export const WatchlistPanel: React.FC<WatchlistPanelProps> = ({
                 <div className="flex items-center gap-3 flex-1 overflow-hidden">
                   <div className={`w-8 h-8 rounded flex-shrink-0 flex items-center justify-center text-slate-400 transition-colors ${
                     activeTab === 'indices' ? 'bg-blue-900/20 text-blue-400' : 
-                    activeTab === 'stocks' ? 'bg-emerald-900/20 text-emerald-400' : 'bg-slate-700'
+                    activeTab === 'stocks' ? 'bg-emerald-900/20 text-emerald-400' : 
+                    activeTab === 'nifty100' ? 'bg-purple-900/20 text-purple-400' :
+                    activeTab === 'nifty200' ? 'bg-orange-900/20 text-orange-400' :
+                    activeTab === 'nifty500' ? 'bg-indigo-900/20 text-indigo-400' :
+                    'bg-slate-700'
                   }`}>
                     <TrendingUp size={14} />
                   </div>
