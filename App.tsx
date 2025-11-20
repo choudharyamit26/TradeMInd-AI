@@ -18,7 +18,7 @@ const App: React.FC = () => {
               </h1>
               <p className="text-xs text-slate-400 flex items-center gap-1">
                 <Activity className="w-3 h-3" />
-                Indian Market Swing Trading Bot
+                Indian Market Assistant (Intraday & Swing)
               </p>
             </div>
           </div>
@@ -32,7 +32,8 @@ const App: React.FC = () => {
       {/* Main Chat Area */}
       <main className="flex-1 overflow-hidden relative">
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none"></div>
-        <div className="h-full max-w-5xl mx-auto w-full">
+        {/* Expanded max-width to support side-by-side chat and watchlist */}
+        <div className="h-full max-w-[90rem] mx-auto w-full">
           <ChatInterface />
         </div>
       </main>
