@@ -12,6 +12,9 @@ export default defineConfig(({ mode }) => {
     define: {
       // Map the process.env.API_KEY used in the app to the loaded env variable
       'process.env.API_KEY': JSON.stringify(env.API_KEY)
-    }
+    },
+    optimizeDeps: {
+      exclude: ['@google/genai'],
+    },
   }
 })
