@@ -2,7 +2,7 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Role, Message } from '../types';
-import { User, Bot, ExternalLink, TrendingUp, TrendingDown, MinusCircle, Target, ShieldAlert, CircleDollarSign, Clock, Calendar, Star, Newspaper, Activity, BarChart2, ScanLine } from 'lucide-react';
+import { User, Bot, ExternalLink, TrendingUp, TrendingDown, Minus, Target, ShieldAlert, CircleDollarSign, Clock, Calendar, Star, Newspaper, Activity, BarChart2, ScanLine } from 'lucide-react';
 
 interface MessageBubbleProps {
   message: Message;
@@ -26,8 +26,15 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onToggleW
     switch (signal) {
       case 'BUY': return <TrendingUp className="w-5 h-5 text-emerald-400" />;
       case 'SELL': return <TrendingDown className="w-5 h-5 text-red-400" />;
-      default: return <MinusCircle className="w-5 h-5 text-slate-400" />;
+      default: return <Minus className="w-5 h-5 text-slate-400" />;
     }
+  };
+
+  const getSentimentVisuals = (sentiment?: string) => {
+    const s = sentiment?.toLowerCase() || '';
+    if (s.includes('positive')) return { icon: TrendingUp, color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' };
+    if (s.includes('negative')) return { icon: TrendingDown, color: 'text-red-400', bg: 'bg-red-500/10 border-red-500/20' };
+    return { icon: Minus, color: 'text-yellow-400', bg: 'bg-yellow-500/10 border-yellow-500/20' };
   };
 
   const isInWatchlist = message.tradeData && watchlist?.includes(message.tradeData.symbol);
@@ -146,42 +153,21 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onToggleW
                      {/* Indicators */}
                      {message.tradeData.technicals && (
                        <div className="grid grid-cols-2 gap-2 mb-3">
-                          <div className="bg-black/20 px-2 py-1.5 rounded-md text-[10px] flex items-center justify-between gap-2 border border-white/5">
-                            <span className="opacity-60 font-medium">RSI</span> 
-                            <span className="font-mono text-white font-semibold text-right truncate">{message.tradeData.technicals.rsi}</span>
-                          </div>
-                          <div className="bg-black/20 px-2 py-1.5 rounded-md text-[10px] flex items-center justify-between gap-2 border border-white/5">
-                            <span className="opacity-60 font-medium">MACD</span> 
-                            <span className="font-mono text-white font-semibold text-right truncate">{message.tradeData.technicals.macd}</span>
-                          </div>
-                          <div className="bg-black/20 px-2 py-1.5 rounded-md text-[10px] flex items-center justify-between gap-2 border border-white/5">
-                            <span className="opacity-60 font-medium">ADX</span> 
-                            <span className="font-mono text-white font-semibold text-right truncate">{message.tradeData.technicals.adx}</span>
-                          </div>
-                          <div className="bg-black/20 px-2 py-1.5 rounded-md text-[10px] flex items-center justify-between gap-2 border border-white/5">
-                            <span className="opacity-60 font-medium">EMA</span> 
-                            <span className="font-mono text-white font-semibold text-right truncate max-w-[80px]">{message.tradeData.technicals.ema}</span>
-                          </div>
-                          
-                          {/* New Indicators */}
-                          {message.tradeData.technicals.bb && (
-                             <div className="bg-black/20 px-2 py-1.5 rounded-md text-[10px] flex items-center justify-between gap-2 border border-white/5 col-span-2">
-                               <span className="opacity-60 font-medium whitespace-nowrap">B. Bands</span> 
-                               <span className="font-mono text-white font-semibold text-right truncate">{message.tradeData.technicals.bb}</span>
-                             </div>
-                          )}
-                          {message.tradeData.technicals.atr && (
-                             <div className="bg-black/20 px-2 py-1.5 rounded-md text-[10px] flex items-center justify-between gap-2 border border-white/5">
-                               <span className="opacity-60 font-medium">ATR</span> 
-                               <span className="font-mono text-white font-semibold text-right truncate">{message.tradeData.technicals.atr}</span>
-                             </div>
-                          )}
-                           {message.tradeData.technicals.fibonacci && (
-                             <div className="bg-black/20 px-2 py-1.5 rounded-md text-[10px] flex items-center justify-between gap-2 border border-white/5">
-                               <span className="opacity-60 font-medium">Fib</span> 
-                               <span className="font-mono text-white font-semibold text-right truncate">{message.tradeData.technicals.fibonacci}</span>
-                             </div>
-                          )}
+                          {/* Helper for indicator rows */}
+                          {[
+                            { label: 'RSI', value: message.tradeData.technicals.rsi },
+                            { label: 'MACD', value: message.tradeData.technicals.macd },
+                            { label: 'ADX', value: message.tradeData.technicals.adx },
+                            { label: 'EMA', value: message.tradeData.technicals.ema },
+                            { label: 'ATR', value: message.tradeData.technicals.atr },
+                            { label: 'Fib', value: message.tradeData.technicals.fibonacci },
+                            { label: 'B. Bands', value: message.tradeData.technicals.bb, colSpan: true }
+                          ].map((item, idx) => item.value ? (
+                            <div key={idx} className={`bg-black/20 px-2 py-1.5 rounded-md text-[10px] flex items-center justify-between gap-3 border border-white/5 ${item.colSpan ? 'col-span-2' : ''}`}>
+                              <span className="opacity-60 font-medium whitespace-nowrap min-w-[30px]">{item.label}</span> 
+                              <span className="font-mono text-white font-semibold text-right truncate flex-1">{item.value}</span>
+                            </div>
+                          ) : null)}
                        </div>
                      )}
 
@@ -241,19 +227,21 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onToggleW
                     message.tradeData.newsSentiment?.toLowerCase().includes('negative') ? 'bg-red-900/10 border-red-500/10' :
                     'bg-yellow-900/10 border-yellow-500/10'
                   }`}>
-                    <div className="flex items-center justify-between mb-1.5">
+                    <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-1.5 text-[10px] font-bold opacity-90">
                         <Newspaper size={12} /> MARKET CONTEXT
                       </div>
-                      {message.tradeData.newsSentiment && (
-                        <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase border ${
-                          message.tradeData.newsSentiment.toLowerCase().includes('positive') ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10' :
-                          message.tradeData.newsSentiment.toLowerCase().includes('negative') ? 'text-red-400 border-red-500/20 bg-red-500/10' :
-                          'text-yellow-400 border-yellow-500/20 bg-yellow-500/10'
-                        }`}>
-                          {message.tradeData.newsSentiment}
-                        </span>
-                      )}
+                      
+                      {/* Sentiment Badge */}
+                      {(() => {
+                        const { icon: Icon, color, bg } = getSentimentVisuals(message.tradeData.newsSentiment);
+                        return message.tradeData.newsSentiment ? (
+                          <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded border ${bg} ${color}`}>
+                             <Icon size={10} />
+                             <span className="text-[9px] font-bold uppercase">{message.tradeData.newsSentiment}</span>
+                          </div>
+                        ) : null;
+                      })()}
                     </div>
                     <p className="text-[11px] leading-snug opacity-80 text-slate-200 border-l-2 pl-2 border-white/10">
                       {message.tradeData.newsSummary}
