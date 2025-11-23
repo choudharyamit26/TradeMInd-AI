@@ -103,59 +103,83 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onToggleW
                 
                 {/* 1. Entry/Target/Stop Grid */}
                 <div className="grid grid-cols-3 gap-2">
-                   <div className="flex flex-col bg-black/20 rounded p-2 border border-white/5">
-                      <span className="text-[9px] uppercase opacity-60 mb-0.5 flex items-center gap-1"><CircleDollarSign size={10}/> Entry</span>
-                      <span className="text-xs font-semibold text-white leading-tight">{message.tradeData.entry}</span>
+                   {/* Entry */}
+                   <div className="flex flex-col bg-black/20 rounded-lg p-2 border border-white/5 shadow-sm">
+                      <div className="flex items-center gap-1.5 text-[10px] uppercase opacity-60 mb-1 font-medium tracking-wide">
+                        <CircleDollarSign size={12} className="text-blue-400" /> 
+                        Entry
+                      </div>
+                      <div className="text-xs font-bold text-white tracking-wide">{message.tradeData.entry}</div>
                    </div>
-                   <div className="flex flex-col bg-black/20 rounded p-2 border border-white/5">
-                      <span className="text-[9px] uppercase opacity-60 mb-0.5 flex items-center gap-1"><Target size={10}/> Targets</span>
-                      <div className="flex flex-col">
+                   
+                   {/* Targets */}
+                   <div className="flex flex-col bg-black/20 rounded-lg p-2 border border-white/5 shadow-sm">
+                      <div className="flex items-center gap-1.5 text-[10px] uppercase opacity-60 mb-1 font-medium tracking-wide">
+                        <Target size={12} className="text-emerald-400" /> 
+                        Targets
+                      </div>
+                      <div className="flex flex-col gap-0.5">
                         {message.tradeData.targets.map((t, i) => (
-                           <span key={i} className="text-xs font-semibold text-white leading-tight">{t}</span>
+                           <span key={i} className="text-xs font-bold text-white tracking-wide leading-tight">{t}</span>
                         ))}
                       </div>
                    </div>
-                   <div className="flex flex-col bg-black/20 rounded p-2 border border-white/5">
-                      <span className="text-[9px] uppercase opacity-60 mb-0.5 flex items-center gap-1"><ShieldAlert size={10}/> Stop</span>
-                      <span className="text-xs font-semibold text-white leading-tight">{message.tradeData.stopLoss}</span>
+
+                   {/* Stop Loss */}
+                   <div className="flex flex-col bg-black/20 rounded-lg p-2 border border-white/5 shadow-sm">
+                      <div className="flex items-center gap-1.5 text-[10px] uppercase opacity-60 mb-1 font-medium tracking-wide">
+                        <ShieldAlert size={12} className="text-red-400" /> 
+                        Stop
+                      </div>
+                      <div className="text-xs font-bold text-white tracking-wide">{message.tradeData.stopLoss}</div>
                    </div>
                 </div>
 
-                {/* 2. Verifiable Technicals (New) */}
+                {/* 2. Verifiable Technicals */}
                 {(message.tradeData.technicals || (message.tradeData.patterns && (message.tradeData.patterns.candlestick.length > 0 || message.tradeData.patterns.chart.length > 0))) && (
-                  <div className="bg-black/10 rounded-lg border border-white/5 p-2">
-                     <div className="text-[10px] font-bold opacity-80 mb-2 flex items-center gap-1"><Activity size={12} /> TECHNICAL EVIDENCE</div>
+                  <div className="bg-black/10 rounded-lg border border-white/5 p-2.5">
+                     <div className="text-[10px] font-bold opacity-80 mb-2.5 flex items-center gap-1.5">
+                        <Activity size={12} className="text-indigo-400" /> 
+                        TECHNICAL EVIDENCE
+                     </div>
                      
                      {/* Indicators */}
                      {message.tradeData.technicals && (
-                       <div className="grid grid-cols-2 gap-2 mb-2">
-                          <div className="bg-black/20 px-2 py-1 rounded text-[10px] flex justify-between">
-                            <span className="opacity-60">RSI</span> <span className="font-mono text-white">{message.tradeData.technicals.rsi}</span>
+                       <div className="grid grid-cols-2 gap-2 mb-3">
+                          <div className="bg-black/20 px-2 py-1.5 rounded-md text-[10px] flex items-center justify-between gap-2 border border-white/5">
+                            <span className="opacity-60 font-medium">RSI</span> 
+                            <span className="font-mono text-white font-semibold text-right truncate">{message.tradeData.technicals.rsi}</span>
                           </div>
-                          <div className="bg-black/20 px-2 py-1 rounded text-[10px] flex justify-between">
-                            <span className="opacity-60">MACD</span> <span className="font-mono text-white">{message.tradeData.technicals.macd}</span>
+                          <div className="bg-black/20 px-2 py-1.5 rounded-md text-[10px] flex items-center justify-between gap-2 border border-white/5">
+                            <span className="opacity-60 font-medium">MACD</span> 
+                            <span className="font-mono text-white font-semibold text-right truncate">{message.tradeData.technicals.macd}</span>
                           </div>
-                          <div className="bg-black/20 px-2 py-1 rounded text-[10px] flex justify-between">
-                            <span className="opacity-60">ADX</span> <span className="font-mono text-white">{message.tradeData.technicals.adx}</span>
+                          <div className="bg-black/20 px-2 py-1.5 rounded-md text-[10px] flex items-center justify-between gap-2 border border-white/5">
+                            <span className="opacity-60 font-medium">ADX</span> 
+                            <span className="font-mono text-white font-semibold text-right truncate">{message.tradeData.technicals.adx}</span>
                           </div>
-                          <div className="bg-black/20 px-2 py-1 rounded text-[10px] flex justify-between truncate">
-                            <span className="opacity-60">EMA</span> <span className="font-mono text-white truncate ml-2">{message.tradeData.technicals.ema}</span>
+                          <div className="bg-black/20 px-2 py-1.5 rounded-md text-[10px] flex items-center justify-between gap-2 border border-white/5">
+                            <span className="opacity-60 font-medium">EMA</span> 
+                            <span className="font-mono text-white font-semibold text-right truncate max-w-[80px]">{message.tradeData.technicals.ema}</span>
                           </div>
                           
                           {/* New Indicators */}
                           {message.tradeData.technicals.bb && (
-                             <div className="bg-black/20 px-2 py-1 rounded text-[10px] flex justify-between col-span-2">
-                               <span className="opacity-60">B. Bands</span> <span className="font-mono text-white">{message.tradeData.technicals.bb}</span>
+                             <div className="bg-black/20 px-2 py-1.5 rounded-md text-[10px] flex items-center justify-between gap-2 border border-white/5 col-span-2">
+                               <span className="opacity-60 font-medium whitespace-nowrap">B. Bands</span> 
+                               <span className="font-mono text-white font-semibold text-right truncate">{message.tradeData.technicals.bb}</span>
                              </div>
                           )}
                           {message.tradeData.technicals.atr && (
-                             <div className="bg-black/20 px-2 py-1 rounded text-[10px] flex justify-between">
-                               <span className="opacity-60">ATR</span> <span className="font-mono text-white">{message.tradeData.technicals.atr}</span>
+                             <div className="bg-black/20 px-2 py-1.5 rounded-md text-[10px] flex items-center justify-between gap-2 border border-white/5">
+                               <span className="opacity-60 font-medium">ATR</span> 
+                               <span className="font-mono text-white font-semibold text-right truncate">{message.tradeData.technicals.atr}</span>
                              </div>
                           )}
                            {message.tradeData.technicals.fibonacci && (
-                             <div className="bg-black/20 px-2 py-1 rounded text-[10px] flex justify-between">
-                               <span className="opacity-60">Fib</span> <span className="font-mono text-white">{message.tradeData.technicals.fibonacci}</span>
+                             <div className="bg-black/20 px-2 py-1.5 rounded-md text-[10px] flex items-center justify-between gap-2 border border-white/5">
+                               <span className="opacity-60 font-medium">Fib</span> 
+                               <span className="font-mono text-white font-semibold text-right truncate">{message.tradeData.technicals.fibonacci}</span>
                              </div>
                           )}
                        </div>
@@ -163,15 +187,15 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onToggleW
 
                      {/* Patterns */}
                      {message.tradeData.patterns && (
-                       <div className="flex flex-wrap gap-1">
+                       <div className="flex flex-wrap gap-1.5">
                           {message.tradeData.patterns.candlestick?.map((p, i) => (
-                             <span key={`c-${i}`} className="text-[9px] bg-blue-500/20 text-blue-200 px-1.5 py-0.5 rounded border border-blue-500/20 flex items-center gap-1">
-                               <ScanLine size={9} /> {p}
+                             <span key={`c-${i}`} className="text-[9px] bg-blue-500/10 text-blue-200 px-2 py-1 rounded border border-blue-500/20 flex items-center gap-1.5 font-medium">
+                               <ScanLine size={10} /> {p}
                              </span>
                           ))}
                           {message.tradeData.patterns.chart?.map((p, i) => (
-                             <span key={`ch-${i}`} className="text-[9px] bg-purple-500/20 text-purple-200 px-1.5 py-0.5 rounded border border-purple-500/20 flex items-center gap-1">
-                               <BarChart2 size={9} /> {p}
+                             <span key={`ch-${i}`} className="text-[9px] bg-purple-500/10 text-purple-200 px-2 py-1 rounded border border-purple-500/20 flex items-center gap-1.5 font-medium">
+                               <BarChart2 size={10} /> {p}
                              </span>
                           ))}
                        </div>
@@ -182,15 +206,15 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onToggleW
                 {/* 3. OHLC Data */}
                 {message.tradeData.recentOHLC && message.tradeData.recentOHLC.length > 0 && (
                   <div className="bg-black/10 rounded-lg border border-white/5 p-2 overflow-hidden">
-                     <div className="text-[10px] font-bold opacity-80 mb-1.5">RECENT PRICE ACTION</div>
+                     <div className="text-[10px] font-bold opacity-80 mb-1.5 px-1">RECENT PRICE ACTION</div>
                      <table className="w-full text-[9px] text-left border-collapse">
                        <thead>
                          <tr className="text-slate-500 border-b border-white/5">
-                           <th className="pb-1 pl-1">Time</th>
-                           <th className="pb-1">Open</th>
-                           <th className="pb-1">High</th>
-                           <th className="pb-1">Low</th>
-                           <th className="pb-1 pr-1 text-right">Close</th>
+                           <th className="pb-1 pl-1 font-medium">Time</th>
+                           <th className="pb-1 font-medium">Open</th>
+                           <th className="pb-1 font-medium">High</th>
+                           <th className="pb-1 font-medium">Low</th>
+                           <th className="pb-1 pr-1 text-right font-medium">Close</th>
                          </tr>
                        </thead>
                        <tbody>
