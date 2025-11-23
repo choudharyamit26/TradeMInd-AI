@@ -43,6 +43,15 @@ export interface TradeData {
   }>;
 }
 
+export interface ScreenerResult {
+  symbol: string;
+  price: string;
+  change: string; // e.g. "+4.5%"
+  volume: string; // e.g. "2.5x Avg"
+  pattern: string; // e.g. "Cup and Handle Breakout"
+  conviction: 'High' | 'Medium' | 'Low';
+}
+
 export interface Message {
   id: string;
   role: Role;

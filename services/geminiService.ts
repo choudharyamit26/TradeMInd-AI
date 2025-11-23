@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
-import { TradeData, TradingStyle } from "../types";
+import { TradeData, TradingStyle, ScreenerResult } from "../types";
 
 // Initialize the client
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -127,5 +127,66 @@ export const sendMessageToGemini = async (
   } catch (error) {
     console.error("Gemini API Error:", error);
     throw error;
+  }
+};
+
+// --- SCREENER FUNCTIONALITY ---
+
+export const runMarketScan = async (scanType: string): Promise<ScreenerResult[]> => {
+  try {
+    const chat = ai.chats.create({
+      model: MODEL_NAME,
+      config: {
+        systemInstruction: `
+          You are a Real-Time Stock Screener for the Indian Market (Nifty 500).
+          Your goal is to find 4-6 stocks that MATCH the specific scan criteria provided by the user.
+          
+          Protocol:
+          1. Use Google Search to find "Top trending stocks India today", "Volume shockers Nifty 500 today", or stocks matching the specific scan type (e.g., "Bullish Flag breakout stocks India").
+          2. Filter for Nifty 500 or liquid stocks only.
+          3. Return the result strictly as a JSON array.
+        `,
+        temperature: 0.4,
+        tools: [{ googleSearch: {} }],
+      },
+    });
+
+    const result = await chat.sendMessage({
+      message: `Find 5 Nifty 500 stocks matching this criteria: "${scanType}".
+      Focus on: Breakouts, Volume Spikes, Chart Patterns.
+      Return STRICTLY a JSON array with this format:
+      [
+        {
+          "symbol": "TATASTEEL",
+          "price": "150.50",
+          "change": "+3.2%",
+          "volume": "High (2x Avg)",
+          "pattern": "Ascending Triangle Breakout",
+          "conviction": "High"
+        }
+      ]
+      Do not add markdown text before or after the JSON.
+      `,
+    });
+
+    const fullText = result.text || "";
+    const jsonRegex = /```json\n([\s\S]*?)\n```/;
+    const match = fullText.match(jsonRegex);
+    
+    if (match && match[1]) {
+      return JSON.parse(match[1]) as ScreenerResult[];
+    } else {
+      // Fallback: try to parse the raw text if code blocks are missing
+      try {
+         const rawJson = fullText.substring(fullText.indexOf('['), fullText.lastIndexOf(']') + 1);
+         return JSON.parse(rawJson) as ScreenerResult[];
+      } catch (e) {
+         console.error("Failed to parse screener JSON", e);
+         return [];
+      }
+    }
+  } catch (error) {
+    console.error("Screener API Error:", error);
+    return [];
   }
 };
