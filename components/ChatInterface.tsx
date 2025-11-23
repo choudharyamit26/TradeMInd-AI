@@ -80,10 +80,16 @@ export const ChatInterface: React.FC = () => {
     setIsLoading(true);
     
     try {
-      const history = messages.map(msg => ({
+      // Prepare history: Gemini requires history to start with a User turn.
+      // We map our messages, then remove the first one if it's from the Model (e.g. Welcome message)
+      let history = messages.map(msg => ({
         role: msg.role === Role.USER ? 'user' : 'model',
         parts: [{ text: msg.content }]
       }));
+
+      while (history.length > 0 && history[0].role === 'model') {
+        history.shift();
+      }
 
       const response = await sendMessageToGemini(
         history, 
@@ -102,6 +108,7 @@ export const ChatInterface: React.FC = () => {
 
       setMessages(prev => [...prev, botMessage]);
     } catch (error) {
+      console.error(error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: Role.MODEL,
@@ -132,10 +139,17 @@ export const ChatInterface: React.FC = () => {
     if (isScreenerOpen) setIsScreenerOpen(false); // Close screener if open
 
     try {
-      const history = messages.map(msg => ({
+      // Prepare history: Gemini requires history to start with a User turn.
+      // We map our messages (excluding the just-added userMessage since it's passed as current input), 
+      // then remove the first one if it's from the Model.
+      let history = messages.map(msg => ({
         role: msg.role === Role.USER ? 'user' : 'model',
         parts: [{ text: msg.content }]
       }));
+
+      while (history.length > 0 && history[0].role === 'model') {
+        history.shift();
+      }
 
       const response = await sendMessageToGemini(history, userMessage.content, tradingMode);
 
@@ -150,6 +164,7 @@ export const ChatInterface: React.FC = () => {
 
       setMessages(prev => [...prev, botMessage]);
     } catch (error) {
+      console.error(error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: Role.MODEL,
