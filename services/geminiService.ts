@@ -5,6 +5,7 @@ import { TradeData, TradingStyle, ScreenerResult } from "../types";
 // Initialize the client
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
+// Switched to Flash model for better free-tier quota availability
 const MODEL_NAME = 'gemini-2.0-flash';
 
 const getSystemInstruction = (mode: string) => `
@@ -86,6 +87,7 @@ export const sendMessageToGemini = async (
         systemInstruction: getSystemInstruction(tradingMode),
         temperature: 0.3, 
         tools: [{ googleSearch: {} }],
+        // Thinking config removed as it is not supported by standard Flash models
       },
       history: history,
     });
@@ -119,8 +121,8 @@ export const sendMessageToGemini = async (
 
     // Extract sources
     const sources = result.candidates?.[0]?.groundingMetadata?.groundingChunks
-      ?.map((chunk: any) => chunk.web)
-      .filter((web: any) => web !== undefined && web !== null) as { title: string; uri: string }[] | undefined;
+      ?.map((chunk) => chunk.web)
+      .filter((web) => web !== undefined && web !== null) as { title: string; uri: string }[] | undefined;
 
     return { text: displayText, sources, tradeData };
   } catch (error) {
